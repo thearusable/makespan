@@ -35,7 +35,7 @@ public class Job {
     }
     
     public void print(){
-        System.out.println("Job ID:" + id + " remainingTime: " + remainingTime);
+        System.out.println("Duration: " + duration + " RemainingTime: " + remainingTime);
         for(int i = 0; i < Tasks.size(); i++){
             Tasks.get(i).print();
         }
@@ -44,6 +44,12 @@ public class Job {
     
     public void addTask(Task task){
         Tasks.add(task);
+    }
+    
+    public Task popTask(){
+        Task temp = Tasks.get(0);
+        Tasks.remove(0);
+        return temp;
     }
     
     public void setId(int id) {

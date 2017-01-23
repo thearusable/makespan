@@ -42,7 +42,24 @@ public class Makespan {
     
     public int calcMakespan(){
 
-        //TODO calculation
+        List<Job> Machines;
+        Machines = new ArrayList<>();        
+
+        for(int i = 0; i < MACHINES_NUMBER; i++){
+            Machines.add(new Job(i));
+        }
+        
+        for(int j =0; j < JOBS_NUMBER; j++){
+            for(int m=0; m < MACHINES_NUMBER; m++){
+                Task task = Jobs.get(Sequence.get(m).get(j)).popTask();
+                Machines.get(m).addTask(task);
+                Machines.get(m).setDuration(Machines.get(m).getDuration() + task.getDuration());
+            }
+        }
+        
+        for(int i =0; i< MACHINES_NUMBER; i++){
+            Machines.get(i).print();
+        }
         
         return 0;
     }
