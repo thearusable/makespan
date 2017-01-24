@@ -12,7 +12,6 @@ package makespan;
 public class Task {
    
     int machineID;
-    int gap;
     int duration;
     int jobID;
     int startTime;
@@ -22,11 +21,10 @@ public class Task {
         this.duration = duration;
         this.jobID = jobID;
         this.startTime = startTime;
-        this.gap = 0;
     }
     
     public void print(){
-        System.out.println("machineID: " + machineID + " gap:" + gap + " duration: " + duration + " JobID: " + jobID + " startTime: " + startTime + " endTime: " + (startTime + duration));
+        System.out.println("machineID: " + machineID +  " JobID: " + jobID + " startTime: " + startTime + " duration: " + duration + " endTime: " + (startTime + duration));
     }
     
 } 

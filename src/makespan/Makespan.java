@@ -9,11 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -27,7 +23,6 @@ public class Makespan {
         MACHINES_NUMBER = 0;
         JOBS_NUMBER = 0;
         MAKESPAN_ORIGINAL = 0;
-        DEBUG = false;
         Jobs = new ArrayList<>();
         Sequence = new ArrayList<>();
         Machines = new ArrayList<>();   
@@ -36,8 +31,6 @@ public class Makespan {
     int MACHINES_NUMBER;
     int JOBS_NUMBER;
     int MAKESPAN_ORIGINAL;
-    
-    boolean DEBUG;
     
     List<Job> Jobs;
     List<List<Integer>> Sequence;
@@ -50,87 +43,26 @@ public class Makespan {
         }
         
         for(int j =0; j < JOBS_NUMBER; j++){
-        //    int j = 0;
             for(int m=0; m < MACHINES_NUMBER; m++){
                 int jobID = Sequence.get(m).get(j);
-                //System.out.println("Sequence at " + m + " " + j + " :" + jobID);
                 Task task = Jobs.get(jobID).popFrontTask();
-                //task.print();
-                //task.startTime = Machines.get(task.machineID - 1).duration;
-                
-                int minimalStartTime = Machines.get(task.machineID - 1).duration;
-                int firstMinimal = minimalStartTime;
-                
-                for(int x = 0; x < Machines.size(); x++){
-                    for(int y = 0; y < Machines.get(x).Tasks.size(); y++ ){
-                        Task temp = Machines.get(x).Tasks.get(y);
-                        //temp.print();
-                        
-                        if(temp.jobID == task.jobID
-                                && temp.startTime + temp.duration < minimalStartTime + task.duration){
-                            if(temp.startTime + temp.duration > minimalStartTime){
-                                System.out.println("Poprzedni z id: "+ task.jobID);
-                                temp.print();
-                                System.out.print("do wstawienia: ");
-                                task.print();
-                                //minimalStartTime = temp.startTime + temp.duration;
-                                System.out.println("minimal: " + minimalStartTime);
-                            }
-                        }
-                        
-                        /* gap length -> next
-                        if(temp.startTime + temp.duration > minimalStartTime 
-                                && x == task.jobID){
-                            minimalStartTime = temp.startTime + task.duration;
-                            System.out.println("minimal: " + minimalStartTime);
-                        }
-                        */
-                    }
-                }
-                
-                task.startTime = minimalStartTime;
-                task.gap = minimalStartTime - firstMinimal;
-                
-                //task.print();
+                task.startTime = Machines.get(task.machineID - 1).duration;
                 
                 Machines.get(task.machineID - 1).Tasks.addLast(task);
                 Machines.get(task.machineID - 1).duration = task.startTime + task.duration;
             }
         }
         
-        /*
-        
-        for(int i = 0; i < JOBS_NUMBER; i++){
-            for(int j = 0; j < MACHINES_NUMBER; j++){
-                Task temp = Machines.get(j).Tasks.get(i);
-                
-                if(temp.jobID == task.jobID
-                                && temp.startTime + temp.duration < minimalStartTime + task.duration){
-                            if(temp.startTime + temp.duration > minimalStartTime){
-                                System.out.println("Poprzedni z id: "+ task.jobID);
-                                temp.print();
-                                System.out.print("do wstawienia: ");
-                                task.print();
-                                minimalStartTime = temp.startTime + temp.duration;
-                                System.out.println("minimal: " + minimalStartTime);
-                            }
-                        }
-            }
-        }
-        */
-        
         int makespan = 0;
         for(int i =0; i< MACHINES_NUMBER; i++){
-            Machines.get(i).print();
             if(Machines.get(i).duration > makespan) makespan = Machines.get(i).duration;
         }
         
+        System.out.println();
+        System.out.println("First Machine:");
+        Machines.get(0).print();
+        
         return makespan;
-    }
-    
-    public int getMax(int a, int b){
-        if(a > b) return a;
-        else return b;
     }
     
     public void calc(String[] args) throws IOException {
@@ -155,14 +87,13 @@ public class Makespan {
             canBeCalculated = false;
         }
         
-        if(args.length > 2){
-            DEBUG = true;
-        }
-        
         if(canBeCalculated){
             //calc makespan
             int calculatedMakespan = calcMakespan();
             //display results
+            System.out.println();
+            System.out.println("////////////////////////////////////////");
+            System.out.println("JOBS: " + JOBS_NUMBER + " MACHINES: " + MACHINES_NUMBER);
             System.out.println("Original makespan: " + MAKESPAN_ORIGINAL 
                 + "  calculated makespan: " + calculatedMakespan);
         }else{
@@ -187,31 +118,6 @@ public class Makespan {
         }
         
         return result.split(" ");
-        
-        /*
-        StringBuilder result = new StringBuilder(text);
-
-        List<Integer> indexesToDelete = new ArrayList<>();
-        
-        char lastchar = result.charAt(0);
-        for(int i = 1; i < text.length(); i++){
-            if((result.charAt(i) == ' ' && lastchar == ' ')
-                    || (result.charAt(i) == '\t' && lastchar == '\t')){
-                indexesToDelete.add(i);
-            }
-            lastchar = result.charAt(i);
-        }
-        
-        for(int i = indexesToDelete.size() - 1; i >= 0; i--){
-            result.deleteCharAt(indexesToDelete.get(i));
-        }
-
-        if(result.charAt(0) == ' '){
-            result.deleteCharAt(0);
-        }
-        
-        return result.toString().split(" ");
-*/
     }
     
     public void loadDataFile(String filename) throws FileNotFoundException, IOException{
@@ -263,6 +169,7 @@ public class Makespan {
         if(true){
             
             System.out.println("Readed from Data file:");
+            System.out.println("JOBS: " + JOBS_NUMBER + " MACHINES: " + MACHINES_NUMBER);
             System.out.println("Times:");
             for(int i =0; i<times.length; i++){
                 for(int j = 0; j < times[i].length; j++){
@@ -294,8 +201,6 @@ public class Makespan {
             }
             Jobs.get(i).setRemainingTime();
         }
-        
-        //Jobs.get(2).print();
     }
     
     public void loadResultsFile(String filename) throws FileNotFoundException, IOException{
@@ -331,17 +236,14 @@ public class Makespan {
                 currentReadedJob++;
             }
         }
-        if(true){
-            
-            System.out.println("Readed from Results file:");
-            System.out.println("Sequence:");
-            for(int i =0; i<sequence.length; i++){
-                for(int j = 0; j < sequence[i].length; j++){
-                    System.out.print(sequence[i][j] + " ");
-                }
-                System.out.println();
-            }
 
+        System.out.println("Readed from Results file:");
+        System.out.println("Sequence:");
+        for(int i =0; i<sequence.length; i++){
+            for(int j = 0; j < sequence[i].length; j++){
+                System.out.print(sequence[i][j] + " ");
+            }
+            System.out.println();
         }
         
         for(int i = 0; i < MACHINES_NUMBER; i++){
@@ -354,12 +256,6 @@ public class Makespan {
                         Integer.parseInt(sequence[i][j]));
             }
         }
-        
-        //for(int i =0; i < JOBS_NUMBER; i++){
-        //    System.out.print(sequence[0][i] + " ");
-        //}
-        
-        
     }
     
 
