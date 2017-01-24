@@ -24,7 +24,7 @@ public class Task {
     }
     
     public void print(){
-        System.out.println("machineID: " + machineID + " duration: " + duration + " JobID: " + jobID + " startTime: " + startTime);
+        System.out.println("machineID: " + machineID + " duration: " + duration + " JobID: " + jobID + " startTime: " + startTime + " endTime: " + (startTime + duration));
     }
     
     public void setMachineID(int machineID) {

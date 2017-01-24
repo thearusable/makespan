@@ -35,7 +35,7 @@ public class Job {
     }
     
     public void print(){
-        System.out.println("Duration: " + duration + " RemainingTime: " + remainingTime);
+        System.out.println("Machine: " + (id + 1) + " Duration: " + duration);
         for(int i = 0; i < Tasks.size(); i++){
             Tasks.get(i).print();
         }
@@ -46,10 +46,20 @@ public class Job {
         Tasks.add(task);
     }
     
-    public Task popTask(){
+    public Task popFrontTask(){
         Task temp = Tasks.get(0);
         Tasks.remove(0);
         return temp;
+    }
+    
+    public Task popBackTask(){
+        Task temp = Tasks.get(Tasks.size() - 1);
+        Tasks.remove(Tasks.size() - 1);
+        return temp;
+    }
+    
+    public Task getTask(int i){
+        return Tasks.get(i);
     }
     
     public void setId(int id) {
