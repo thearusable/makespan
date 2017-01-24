@@ -5,6 +5,8 @@
  */
 package makespan;
 
+import edu.princeton.cs.algs4.DirectedEdge;
+import edu.princeton.cs.algs4.EdgeWeightedDigraph;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -12,6 +14,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+/*
+    Nie trzeba nic rysować, ale w kodzie powinna być tworzona reprezentacja grafowa rozwiązania
+    i makespan powinien być określany jako długość najdłuższej ścieżki między źródłem i ujściem 
+    - dla bardziej złożonych problemów takie uporządkowane podejście pomaga.
+    Można się wspomóc biblioteką algs4, ale zawiera ona reprezentację z obciążonymi łukami (klasa EdgeWeightedDigraph), 
+    a graf rozwiązania job shop ma obciążone wierzchołki, trzeba zatem wagi przenieść z każdego wierzchołka na wszystkie wychodzące z niego łuki.
+*/
 
 /**
  *
@@ -25,7 +35,6 @@ public class Makespan {
         MAKESPAN_ORIGINAL = 0;
         Jobs = new ArrayList<>();
         Sequence = new ArrayList<>();
-        Machines = new ArrayList<>();   
     }
 
     int MACHINES_NUMBER;
@@ -34,26 +43,86 @@ public class Makespan {
     
     List<Job> Jobs;
     List<List<Integer>> Sequence;
-    List<Machine> Machines;
+    
+    
+    EdgeWeightedDigraph Digraph;
     
     public int calcMakespan(){       
 
+        List<Machine> Machines;
+        Machines = new ArrayList<>();
+        
         for(int i = 0; i < MACHINES_NUMBER; i++){
             Machines.add(new Machine(i + 1));
         }
         
         for(int j =0; j < JOBS_NUMBER; j++){
-            for(int m=0; m < MACHINES_NUMBER; m++){
+            for(int m=0; m < MACHINES_NUMBER; m++){        
                 int jobID = Sequence.get(m).get(j);
                 Task task = Jobs.get(jobID).popFrontTask();
                 task.startTime = Machines.get(task.machineID - 1).duration;
-                
                 Machines.get(task.machineID - 1).Tasks.addLast(task);
                 Machines.get(task.machineID - 1).duration = task.startTime + task.duration;
             }
         }
+         
         
+        
+                
+        int VERTEX_NUMBER = JOBS_NUMBER * MACHINES_NUMBER - (MACHINES_NUMBER - 2);
+        
+        Digraph = new EdgeWeightedDigraph(VERTEX_NUMBER);
+        //DirectedEdge e = new DirectedEdge(0,1,123);
+        
+        int last_index = 1;
+        for(int m =0; m < MACHINES_NUMBER; m++){
+            for(int t=0; t < Machines.get(m).Tasks.size(); t++){
+                Task task = Machines.get(m).Tasks.get(t);
+                DirectedEdge edge;
+                //polaczenie z 0 
+                
+                if(t == 0){
+                    edge = new DirectedEdge(0, last_index, task.duration);
+                    Digraph.addEdge(edge);
+                    last_index++;
+                    continue;
+                }
+                //polaczenie z koncem
+                if(t == Machines.get(m).Tasks.size() - 1){
+                    edge = new DirectedEdge(last_index - 1, VERTEX_NUMBER - 1, task.duration);
+                    Digraph.addEdge(edge);
+                    //last_index++;
+                    continue;
+                }
+                
+                edge = new DirectedEdge(last_index - 1, last_index, task.duration);
+                Digraph.addEdge(edge);
+                last_index++;
+            }
+        }
+        
+        System.out.println(Digraph.toString());
+        
+
+        int max = 0;
         int makespan = 0;
+        for(DirectedEdge e: Digraph.adj(0)){
+            max = 0;
+            max += e.weight();
+            int nextVertex = e.to();
+            while(nextVertex != VERTEX_NUMBER - 1){
+                for(DirectedEdge temp: Digraph.adj(nextVertex)){
+                    max += temp.weight();
+                    nextVertex = temp.to();
+                    break;
+                }
+            }
+            if(max > makespan) makespan = max;
+        }
+        
+        
+        /*
+        makespan = 0;
         int jobIdToShow = 0;
         for(int i =0; i< MACHINES_NUMBER; i++){
             if(Machines.get(i).duration > makespan)
@@ -61,12 +130,13 @@ public class Makespan {
                 makespan = Machines.get(i).duration;
                 jobIdToShow = i;
             }
-        }
+        }*/
         
+        /*
         System.out.println();
         System.out.println("Longest working machine:");
         Machines.get(jobIdToShow).print();
-        
+        */
         return makespan;
     }
     
@@ -171,7 +241,7 @@ public class Makespan {
                 currentReadedJob++;
             }
         }
-        if(true){
+        if(false){
             
             System.out.println("Readed from Data file:");
             System.out.println("JOBS: " + JOBS_NUMBER + " MACHINES: " + MACHINES_NUMBER);
@@ -241,7 +311,7 @@ public class Makespan {
                 currentReadedJob++;
             }
         }
-
+        /*
         System.out.println("Readed from Results file:");
         System.out.println("Sequence:");
         for(int i =0; i<sequence.length; i++){
@@ -250,7 +320,7 @@ public class Makespan {
             }
             System.out.println();
         }
-        
+        */
         for(int i = 0; i < MACHINES_NUMBER; i++){
             Sequence.add(new ArrayList<Integer>(20));
         }
