@@ -19,14 +19,7 @@ public class Job {
     int remainingTime;
     int duration;
     
-    /*
-    public Job(List<Task> Tasks, int id, int remainingTime, int duration) {
-        this.Tasks = Tasks;
-        this.id = id;
-        this.remainingTime = remainingTime;
-        this.duration = duration;
-    }
-    */
+    
     public Job(int id){
         this.Tasks = new ArrayList<>();
         this.id = id;
@@ -62,9 +55,6 @@ public class Job {
         return Tasks.get(i);
     }
     
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public void setRemainingTime(int remainingTime) {
         this.remainingTime = remainingTime;
@@ -73,24 +63,9 @@ public class Job {
     public void setRemainingTime(){
         if(Tasks.size() > 0){
             for(int i =0; i < Tasks.size(); i++){
-                this.remainingTime += Tasks.get(i).getDuration();
+                this.remainingTime += Tasks.get(i).duration;
             }
         }
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public int getRemainingTime() {
-        return remainingTime;
-    }
-
-    public int getDuration() {
-        return duration;
-    }  
 }

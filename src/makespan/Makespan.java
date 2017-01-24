@@ -30,6 +30,7 @@ public class Makespan {
         DEBUG = false;
         Jobs = new ArrayList<>();
         Sequence = new ArrayList<>();
+        Machines = new ArrayList<>();   
     }
 
     int MACHINES_NUMBER;
@@ -40,15 +41,12 @@ public class Makespan {
     
     List<Job> Jobs;
     List<List<Integer>> Sequence;
+    List<Machine> Machines;
     
-    
-    public int calcMakespan(){
-
-        List<Job> Machines;
-        Machines = new ArrayList<>();        
+    public int calcMakespan(){       
 
         for(int i = 0; i < MACHINES_NUMBER; i++){
-            Machines.add(new Job(i));
+            Machines.add(new Machine(i + 1));
         }
         
         for(int j =0; j < JOBS_NUMBER; j++){
@@ -59,8 +57,9 @@ public class Makespan {
                 Task task = Jobs.get(jobID).popFrontTask();
                 //task.print();
                 //task.startTime = Machines.get(task.machineID - 1).duration;
-                int minimalStartTime = Machines.get(task.machineID - 1).duration;
                 
+                int minimalStartTime = Machines.get(task.machineID - 1).duration;
+                int firstMinimal = minimalStartTime;
                 
                 for(int x = 0; x < Machines.size(); x++){
                     for(int y = 0; y < Machines.get(x).Tasks.size(); y++ ){
@@ -74,12 +73,12 @@ public class Makespan {
                                 temp.print();
                                 System.out.print("do wstawienia: ");
                                 task.print();
-                                minimalStartTime = temp.startTime + temp.duration;
+                                //minimalStartTime = temp.startTime + temp.duration;
                                 System.out.println("minimal: " + minimalStartTime);
                             }
                         }
                         
-                        /*
+                        /* gap length -> next
                         if(temp.startTime + temp.duration > minimalStartTime 
                                 && x == task.jobID){
                             minimalStartTime = temp.startTime + task.duration;
@@ -90,11 +89,12 @@ public class Makespan {
                 }
                 
                 task.startTime = minimalStartTime;
+                task.gap = minimalStartTime - firstMinimal;
                 
                 //task.print();
                 
-                Machines.get(task.machineID - 1).addTask(task);
-                Machines.get(task.machineID - 1).setDuration(task.startTime + task.getDuration());
+                Machines.get(task.machineID - 1).Tasks.addLast(task);
+                Machines.get(task.machineID - 1).duration = task.startTime + task.duration;
             }
         }
         
@@ -120,17 +120,8 @@ public class Makespan {
         */
         
         int makespan = 0;
-        int gaps = 0;
         for(int i =0; i< MACHINES_NUMBER; i++){
             Machines.get(i).print();
-            
-            for(int j = 1; j < Machines.get(i).Tasks.size(); j++){
-                gaps += Machines.get(i).Tasks.get(j).startTime - (Machines.get(i).Tasks.get(j - 1).startTime +  Machines.get(i).Tasks.get(j - 1).duration); 
-            }
-            
-            System.out.println("Gap: " + gaps);
-            
-            gaps = 0;
             if(Machines.get(i).duration > makespan) makespan = Machines.get(i).duration;
         }
         

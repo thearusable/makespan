@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class Main {
     public static void main(String[] args) throws IOException{
         Makespan makespan = new Makespan();
-        String[] tempParams = {"ta11.txt", "ta11_seq.txt", "-d"};
+        String[] tempParams = {"ta60.txt", "ta60_seq.txt", "-d"};
         
         System.out.println("Arguments:" + Arrays.toString(tempParams));
         makespan.calc(tempParams);
