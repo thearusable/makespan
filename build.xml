@@ -24,6 +24,7 @@
     <copy file="ta70_seq.txt" todir="${build.dir}"/>
     <copy file="ta80.txt" todir="${build.dir}"/>
     <copy file="ta80_seq.txt" todir="${build.dir}"/>
+    <copy file="how_to_run.txt" todir="${dist.dir}"/>
   </target>
     <!--
 

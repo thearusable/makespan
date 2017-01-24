@@ -1,0 +1,3 @@
+Console command:
+
+java -jar "path/to/Makespan.jar" "Data_file_name" "Sequence_file_name"
