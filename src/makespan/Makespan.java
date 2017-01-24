@@ -54,13 +54,18 @@ public class Makespan {
         }
         
         int makespan = 0;
+        int jobIdToShow = 0;
         for(int i =0; i< MACHINES_NUMBER; i++){
-            if(Machines.get(i).duration > makespan) makespan = Machines.get(i).duration;
+            if(Machines.get(i).duration > makespan)
+            {
+                makespan = Machines.get(i).duration;
+                jobIdToShow = i;
+            }
         }
         
         System.out.println();
-        System.out.println("First Machine:");
-        Machines.get(0).print();
+        System.out.println("Longest working machine:");
+        Machines.get(jobIdToShow).print();
         
         return makespan;
     }
