@@ -24,7 +24,7 @@ public class Main {
         if(args.length < 1){
             System.out.println("Empty params - using default ones");
 
-            String[] tempParams = {path + "ta60.txt", path + "ta60_seq.txt"};
+            String[] tempParams = {path + "ta80.txt", path + "ta80_seq.txt"};
         
             System.out.println("Arguments:" + Arrays.toString(tempParams));
             makespan.calc(tempParams);
