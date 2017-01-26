@@ -7,21 +7,7 @@ package makespan;
 
 import edu.princeton.cs.algs4.DirectedEdge;
 import edu.princeton.cs.algs4.EdgeWeightedDigraph;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-
-/*
-    Nie trzeba nic rysować, ale w kodzie powinna być tworzona reprezentacja grafowa rozwiązania
-    i makespan powinien być określany jako długość najdłuższej ścieżki między źródłem i ujściem 
-    - dla bardziej złożonych problemów takie uporządkowane podejście pomaga.
-    Można się wspomóc biblioteką algs4, ale zawiera ona reprezentację z obciążonymi łukami (klasa EdgeWeightedDigraph), 
-    a graf rozwiązania job shop ma obciążone wierzchołki, trzeba zatem wagi przenieść z każdego wierzchołka na wszystkie wychodzące z niego łuki.
-*/
 
 /**
  *
@@ -30,86 +16,24 @@ import java.util.StringTokenizer;
 public class Makespan {
 
     public Makespan() {
-        MACHINES_NUMBER = 0;
-        JOBS_NUMBER = 0;
-        MAKESPAN_ORIGINAL = 0;
-        Jobs = new ArrayList<>();
-        Sequence = new ArrayList<>();
+        DATA = new Data();
+        VERTEX_NUMBER = 0;
     }
-
-    int MACHINES_NUMBER;
-    int JOBS_NUMBER;
-    int MAKESPAN_ORIGINAL;
     
-    List<Job> Jobs;
-    List<List<Integer>> Sequence;
+    private Data DATA;
     
+    public EdgeWeightedDigraph Digraph;
     
-    EdgeWeightedDigraph Digraph;
+    public int CALCULATED_MAKESPAN;
+    private int VERTEX_NUMBER;
     
-    public int calcMakespan(){       
-
-        List<Machine> Machines;
-        Machines = new ArrayList<>();
-        
-        for(int i = 0; i < MACHINES_NUMBER; i++){
-            Machines.add(new Machine(i + 1));
-        }
-        
-        for(int j =0; j < JOBS_NUMBER; j++){
-            for(int m=0; m < MACHINES_NUMBER; m++){        
-                int jobID = Sequence.get(m).get(j);
-                Task task = Jobs.get(jobID).popFrontTask();
-                task.startTime = Machines.get(task.machineID - 1).duration;
-                Machines.get(task.machineID - 1).Tasks.addLast(task);
-                Machines.get(task.machineID - 1).duration = task.startTime + task.duration;
-            }
-        }
-         
-        
-        
-                
-        int VERTEX_NUMBER = JOBS_NUMBER * MACHINES_NUMBER - (MACHINES_NUMBER - 2);
-        
-        Digraph = new EdgeWeightedDigraph(VERTEX_NUMBER);
-        //DirectedEdge e = new DirectedEdge(0,1,123);
-        
-        int last_index = 1;
-        for(int m =0; m < MACHINES_NUMBER; m++){
-            for(int t=0; t < Machines.get(m).Tasks.size(); t++){
-                Task task = Machines.get(m).Tasks.get(t);
-                DirectedEdge edge;
-                //polaczenie z 0 
-                
-                if(t == 0){
-                    edge = new DirectedEdge(0, last_index, task.duration);
-                    Digraph.addEdge(edge);
-                    last_index++;
-                    continue;
-                }
-                //polaczenie z koncem
-                if(t == Machines.get(m).Tasks.size() - 1){
-                    edge = new DirectedEdge(last_index - 1, VERTEX_NUMBER - 1, task.duration);
-                    Digraph.addEdge(edge);
-                    //last_index++;
-                    continue;
-                }
-                
-                edge = new DirectedEdge(last_index - 1, last_index, task.duration);
-                Digraph.addEdge(edge);
-                last_index++;
-            }
-        }
-        
-        System.out.println(Digraph.toString());
-        
-
-        int max = 0;
-        int makespan = 0;
+    private void calcMakespan(){       
+        int max;
+        CALCULATED_MAKESPAN = 0;
         for(DirectedEdge e: Digraph.adj(0)){
             max = 0;
             max += e.weight();
-            int nextVertex = e.to();
+            int nextVertex = e.to();         
             while(nextVertex != VERTEX_NUMBER - 1){
                 for(DirectedEdge temp: Digraph.adj(nextVertex)){
                     max += temp.weight();
@@ -117,221 +41,76 @@ public class Makespan {
                     break;
                 }
             }
-            if(max > makespan) makespan = max;
+            if(max > CALCULATED_MAKESPAN) CALCULATED_MAKESPAN = max;
         }
-        
-        
-        /*
-        makespan = 0;
-        int jobIdToShow = 0;
-        for(int i =0; i< MACHINES_NUMBER; i++){
-            if(Machines.get(i).duration > makespan)
-            {
-                makespan = Machines.get(i).duration;
-                jobIdToShow = i;
-            }
-        }*/
-        
-        /*
-        System.out.println();
-        System.out.println("Longest working machine:");
-        Machines.get(jobIdToShow).print();
-        */
-        return makespan;
     }
     
     public void calc(String[] args) throws IOException {
         boolean canBeCalculated = true;
-        if(args == null || args.length == 0){
-            System.out.println("Missing params!");
-            canBeCalculated = false;
-        }
-        // load data file
-        if(args.length > 0){
-            loadDataFile(args[0]);
-        } else {
-            System.out.println("Path for Data file is not present!");
-            canBeCalculated = false;
-        }
         
         //load reasults file
-        if(args.length > 1){
-            loadResultsFile(args[1]);
-        } else {
-            System.out.println("Path for Results files is not present!");
+        if(args.length <= 1){
             canBeCalculated = false;
         }
         
         if(canBeCalculated){
+            //Load Files
+            DATA.LoadFiles(args[0], args[1], false);
+        
+            //Build Digraph
+            BuildDigraph();
+        
+            //Print Digraph
+            System.out.println(Digraph.toString());
+            
             //calc makespan
-            int calculatedMakespan = calcMakespan();
+            calcMakespan();
+            
             //display results
             System.out.println();
             System.out.println("////////////////////////////////////////");
-            System.out.println("JOBS: " + JOBS_NUMBER + " MACHINES: " + MACHINES_NUMBER);
-            System.out.println("Original makespan: " + MAKESPAN_ORIGINAL 
-                + "  calculated makespan: " + calculatedMakespan);
+            System.out.println("JOBS: " + DATA.JOBS_NUMBER + " MACHINES: " + DATA.MACHINES_NUMBER + " DATA FILE: " + args[0]);
+            System.out.println("Original makespan: " + DATA.MAKESPAN_ORIGINAL 
+                + "  calculated makespan: " + CALCULATED_MAKESPAN);
         }else{
             System.out.println("Program cannot continue - missing required params!");
-            System.out.println("Example Params: file1.txt file2.txt");
-            System.out.println("You can enable debug mode by adding -d as third parameter.");
+            System.out.println("Example Command: java -jar 'path/to/Makespan.jar' 'Data.txt' 'Sequence.txt'");
         }
     }
     
-    public boolean isComment(String line){
-        return line.length() > 0 && line.charAt(0) == '#';
-    }
-    
-    public String[] split(String text) {
-        if(text.length() == 0) return null;
-        
-        StringTokenizer st = new StringTokenizer(text);
-        String result = "";
-        
-        while(st.hasMoreTokens()){
-            result += st.nextToken() + " ";
-        }
-        
-        return result.split(" ");
-    }
-    
-    public void loadDataFile(String filename) throws FileNotFoundException, IOException{
-        BufferedReader reader = new BufferedReader(new FileReader(filename));
-        
-        String line;
-        String[] readedData;
-        int stage = 1;
-        int currentReadedJob = 0;
-        
-        String[][] times = null;
-        String[][] machines = null;
-        
-        while((line = reader.readLine()) != null){        
-            //ignore comments
-            if(isComment(line) || line.length() == 0) continue;
-            
-            //metadata
-            if(stage == 1){
-                if(line.contains("Times")){
-                    stage = 2;
-                    continue;
-                }
-                readedData = split(line);
-                JOBS_NUMBER = Integer.parseInt(readedData[0]);
-                MACHINES_NUMBER = Integer.parseInt(readedData[1]);
-                      
-                times = new String[JOBS_NUMBER][MACHINES_NUMBER];
-                machines = new String[JOBS_NUMBER][MACHINES_NUMBER];
-            }
-            //times
-            if(stage == 2){
-                if(line.contains("Machines")){
-                    currentReadedJob = 0;
-                    stage = 3;
-                    continue;
-                }
-                readedData = split(line);
-                times[currentReadedJob] = readedData;
-                currentReadedJob++;
-            }
-            //machines
-            if(stage == 3){
-                readedData = split(line);
-                machines[currentReadedJob] = readedData;
-                currentReadedJob++;
-            }
-        }
-        if(false){
-            
-            System.out.println("Readed from Data file:");
-            System.out.println("JOBS: " + JOBS_NUMBER + " MACHINES: " + MACHINES_NUMBER);
-            System.out.println("Times:");
-            for(int i =0; i<times.length; i++){
-                for(int j = 0; j < times[i].length; j++){
-                    System.out.print(times[i][j] + " ");
-                }
-                System.out.println();
-            }
-            
-            System.out.println("Machines:");
-            for(int i =0; i<machines.length; i++){
-                for(int j = 0; j < machines[i].length; j++){
-                    System.out.print(machines[i][j] + " ");
-                }
-                System.out.println();
-            }
-        }
-        
-        //Build Data
-        for(int i = 0; i < JOBS_NUMBER; i++){
-            Jobs.add(new Job(i));
-        }
-        for(int i = 0; i < JOBS_NUMBER; i++){
-            for(int j=0; j < MACHINES_NUMBER; j++){
-                Jobs.get(i).addTask(new Task(
-                        Integer.parseInt(machines[i][j]), //machineID
-                        Integer.parseInt(times[i][j]),  //duration
-                        i, //jobID
-                        0)); //startTime
-            }
-            Jobs.get(i).setRemainingTime();
-        }
-    }
-    
-    public void loadResultsFile(String filename) throws FileNotFoundException, IOException{
-        BufferedReader reader = new BufferedReader(new FileReader(filename));
-        
-        String line;
-        String[] readedData;
-        int stage = 1;
-        int currentReadedJob = 0;
-        
-        String[][] sequence = null;
-        
-        while((line = reader.readLine()) != null){        
-            //ignore comments
-            if(isComment(line) || line.length() == 0) continue;
-            
-            //metadata
-            if(stage == 1){
-                readedData = split(line);
-                JOBS_NUMBER = Integer.parseInt(readedData[0]);
-                MACHINES_NUMBER = Integer.parseInt(readedData[1]);
-                MAKESPAN_ORIGINAL = Integer.parseInt(readedData[2]);
-                
-                sequence = new String[MACHINES_NUMBER][JOBS_NUMBER];
-                
-                stage = 2;
-                continue;
-            }
-            //sequence
-            if(stage == 2){
-                readedData = split(line);
-                sequence[currentReadedJob] = readedData;
-                currentReadedJob++;
-            }
-        }
-        /*
-        System.out.println("Readed from Results file:");
-        System.out.println("Sequence:");
-        for(int i =0; i<sequence.length; i++){
-            for(int j = 0; j < sequence[i].length; j++){
-                System.out.print(sequence[i][j] + " ");
-            }
-            System.out.println();
-        }
-        */
-        for(int i = 0; i < MACHINES_NUMBER; i++){
-            Sequence.add(new ArrayList<Integer>(20));
-        }
-        
-        for(int i = 0; i < MACHINES_NUMBER; i++){
-            for(int j=0; j< JOBS_NUMBER; j++){
-                Sequence.get(i).add(
-                        Integer.parseInt(sequence[i][j]));
-            }
-        }
-    }
-    
+    private void BuildDigraph(){
 
+        VERTEX_NUMBER = (DATA.JOBS_NUMBER * DATA.MACHINES_NUMBER) - (DATA.MACHINES_NUMBER - 2) ;
+        
+        Digraph = new EdgeWeightedDigraph(VERTEX_NUMBER);
+        
+        int[] lastIndexPerMachine = new int[DATA.MACHINES_NUMBER];
+        int[] TaskInJob = new int[DATA.JOBS_NUMBER];
+        int last_index = 1;
+        
+        for(int j = 0; j < DATA.JOBS_NUMBER; j++){
+            for(int m = 0; m < DATA.MACHINES_NUMBER; m++){    
+                int jobID = DATA.sequence[m][j];
+                
+                int machineID = DATA.machines[jobID][TaskInJob[jobID]];// j;
+                int duration = DATA.times[jobID][TaskInJob[jobID]];
+                
+                DirectedEdge edge;
+                
+                if(lastIndexPerMachine[machineID - 1] == 0){ //polaczenie z poczatkiem
+                    edge = new DirectedEdge(0, last_index, duration);
+                }else if (j == DATA.JOBS_NUMBER - 1){ //polaczenie z koncem
+                    edge = new DirectedEdge(lastIndexPerMachine[machineID - 1], VERTEX_NUMBER - 1, duration);
+                }else{ //reszta
+                    edge = new DirectedEdge(lastIndexPerMachine[machineID - 1], last_index , duration);
+                }
+                
+                Digraph.addEdge(edge);
+                lastIndexPerMachine[machineID - 1] = last_index;
+                last_index++;
+                TaskInJob[jobID]++;
+            }
+        }
+    }
+    
 }
